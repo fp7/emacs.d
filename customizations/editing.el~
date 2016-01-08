@@ -1,0 +1,15 @@
+(global-set-key (kbd "M-/") 'hippie-expand)
+
+
+(show-paren-mode 1)
+(global-hl-line-mode 1)
+
+(setq-default indent-tabs-mode nil)
+
+save-place-file
+
+(require 'saveplace)
+(setq-default save-place t)
+
+
+
