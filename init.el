@@ -9,7 +9,8 @@
   (package-refresh-contents))
 
 
-(let ((pkgs '(rainbow-delimiters)))
+(let ((pkgs '(rainbow-delimiters
+              auctex)))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
       (package-install pkg))))
