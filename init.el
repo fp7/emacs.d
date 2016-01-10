@@ -13,6 +13,8 @@
               auctex
               haskell-mode
               projectile
+              company
+              company-ghc
               )))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
