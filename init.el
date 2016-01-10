@@ -10,7 +10,8 @@
 
 
 (let ((pkgs '(rainbow-delimiters
-              auctex)))
+              auctex
+              haskell-mode)))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
       (package-install pkg))))
