@@ -21,5 +21,8 @@
 
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
+
+
 (load "editing.el")
 (load "ui.el")
+(load "auctex-cfg.el")
