@@ -11,7 +11,9 @@
 
 (let ((pkgs '(rainbow-delimiters
               auctex
-              haskell-mode)))
+              haskell-mode
+              projectile
+              )))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
       (package-install pkg))))
