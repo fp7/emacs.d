@@ -16,6 +16,7 @@
               company
               company-ghc
               cider
+              clj-refactor
               )))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
