@@ -15,6 +15,7 @@
               projectile
               company
               company-ghc
+              cider
               )))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
