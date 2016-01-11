@@ -15,9 +15,11 @@
               projectile
               company
               company-ghc
+              clojure-mode
+              clojure-mode-extra-font-locking
               cider
               clj-refactor
-              )))
+              smartparens)))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
       (package-install pkg))))
@@ -28,9 +30,9 @@
 
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
-
-
 (load "editing.el")
 (load "ui.el")
 (load "navigation.el")
+(load "sp.el")
 (load "auctex-cfg.el")
+(load "clojure.el")
