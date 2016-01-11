@@ -3,7 +3,7 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "ghc" "ghc.el" (22162 46472 222416 62000))
+;;;### (autoloads nil "ghc" "ghc.el" (22163 60648 580250 381000))
 ;;; Generated autoloads from ghc.el
 
 (autoload 'ghc-init "ghc" "\
@@ -21,7 +21,7 @@
 ;;;### (autoloads nil nil ("ghc-check.el" "ghc-command.el" "ghc-comp.el"
 ;;;;;;  "ghc-doc.el" "ghc-func.el" "ghc-indent.el" "ghc-info.el"
 ;;;;;;  "ghc-ins-mod.el" "ghc-pkg.el" "ghc-process.el" "ghc-rewrite.el")
-;;;;;;  (22162 46472 238608 102000))
+;;;;;;  (22163 60648 593877 93000))
 
 ;;;***
 

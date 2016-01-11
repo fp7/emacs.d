@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "mc-edit-lines" "mc-edit-lines.el" (22162 48378
-;;;;;;  215852 487000))
+;;;### (autoloads nil "mc-edit-lines" "mc-edit-lines.el" (22163 60656
+;;;;;;  450250 806000))
 ;;; Generated autoloads from mc-edit-lines.el
 
 (autoload 'mc/edit-lines "mc-edit-lines" "\
@@ -26,8 +26,8 @@ Add one cursor to the beginning of each line in the active region.
 
 ;;;***
 
-;;;### (autoloads nil "mc-mark-more" "mc-mark-more.el" (22162 48378
-;;;;;;  229185 821000))
+;;;### (autoloads nil "mc-mark-more" "mc-mark-more.el" (22163 60656
+;;;;;;  466917 474000))
 ;;; Generated autoloads from mc-mark-more.el
 
 (autoload 'mc/mark-next-like-this "mc-mark-more" "\
@@ -170,8 +170,8 @@ Mark the tag we're in and its pair for renaming.
 
 ;;;***
 
-;;;### (autoloads nil "mc-mark-pop" "mc-mark-pop.el" (22162 48378
-;;;;;;  222519 154000))
+;;;### (autoloads nil "mc-mark-pop" "mc-mark-pop.el" (22163 60656
+;;;;;;  460250 807000))
 ;;; Generated autoloads from mc-mark-pop.el
 
 (autoload 'mc/mark-pop "mc-mark-pop" "\
@@ -183,7 +183,7 @@ to the popped mark.
 ;;;***
 
 ;;;### (autoloads nil "mc-separate-operations" "mc-separate-operations.el"
-;;;;;;  (22162 48378 225852 487000))
+;;;;;;  (22163 60656 460250 807000))
 ;;; Generated autoloads from mc-separate-operations.el
 
 (autoload 'mc/insert-numbers "mc-separate-operations" "\
@@ -204,7 +204,7 @@ Insert increasing numbers for each cursor, starting at 0 or ARG.
 ;;;***
 
 ;;;### (autoloads nil "rectangular-region-mode" "rectangular-region-mode.el"
-;;;;;;  (22162 48378 222519 154000))
+;;;;;;  (22163 60656 456917 473000))
 ;;; Generated autoloads from rectangular-region-mode.el
 
 (autoload 'set-rectangular-region-anchor "rectangular-region-mode" "\
@@ -218,8 +218,8 @@ an exceedingly quick way of adding multiple cursors to multiple lines.
 ;;;***
 
 ;;;### (autoloads nil nil ("mc-cycle-cursors.el" "multiple-cursors-core.el"
-;;;;;;  "multiple-cursors-pkg.el" "multiple-cursors.el") (22162 48378
-;;;;;;  240386 259000))
+;;;;;;  "multiple-cursors-pkg.el" "multiple-cursors.el") (22163 60656
+;;;;;;  475423 384000))
 
 ;;;***
 
