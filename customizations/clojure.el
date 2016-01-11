@@ -4,7 +4,7 @@
 (add-hook 'clojure-mode-hook #'subword-mode)
 (add-hook 'cider-repl-mode-hook #'subword-mode)
 
-(add-hook 'clojure-mode-hook 'company-mode)
+(add-hook 'cider-mode-hook 'company-mode)
 (add-hook 'cider-repl-mode-hook 'company-mode)
 
 (setq company-idle-delay 0.2)
@@ -14,6 +14,8 @@
 (setq cider-show-error-buffer t)
 (setq cider-prompt-save-file-on-load 'always-save)
 (setq cider-interactive-eval-result-prefix ";; => ")
+(setq cider-repl-result-prefix ";; => ")
+(setq cider-prompt-for-symbol nil)
 
 ;; (require 'clj-refactor)
 
