@@ -32,4 +32,5 @@
 
 (load "editing.el")
 (load "ui.el")
+(load "navigation.el")
 (load "auctex-cfg.el")

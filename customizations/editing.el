@@ -9,9 +9,8 @@
 (require 'saveplace)
 (setq-default save-place t)
 
-
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
-      
+
 
 (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 
