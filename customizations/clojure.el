@@ -1,5 +1,5 @@
-(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
-(add-hook 'cider-repl-mode-hook #'smartparens-strict-mode)
+(add-hook 'clojure-mode-hook #'enable-paredit-mode)
+(add-hook 'cider-repl-mode-hook #'enable-paredit-mode)
 
 (add-hook 'clojure-mode-hook #'subword-mode)
 (add-hook 'cider-repl-mode-hook #'subword-mode)
@@ -16,6 +16,8 @@
 (setq cider-interactive-eval-result-prefix ";; => ")
 (setq cider-repl-result-prefix ";; => ")
 (setq cider-prompt-for-symbol nil)
+(setq cider-repl-display-in-current-window t)
+
 
 ;; (require 'clj-refactor)
 
