@@ -19,7 +19,8 @@
               clojure-mode-extra-font-locking
               cider
               clj-refactor
-              smartparens)))
+              smartparens
+              yaml-mode)))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
       (package-install pkg))))
