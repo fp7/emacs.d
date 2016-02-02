@@ -1,6 +1,13 @@
 (global-set-key (kbd "M-/") 'hippie-expand)
 
 
+
+(autoload 'zap-up-to-char "misc"
+    "Kill up to, but not including ARGth occurrence of CHAR." t)
+(global-set-key (kbd "M-z") 'zap-up-to-char)
+
+
+
 (show-paren-mode 1)
 (global-hl-line-mode 1)
 
@@ -23,3 +30,11 @@
   
 
 (setq electric-indent-mode nil)
+
+
+(setq mouse-yank-at-point t)
+
+(setq x-select-enable-clipboard t
+      x-select-enable-primary t
+      save-interprogram-paste-before-kill t
+      require-final-newline t)

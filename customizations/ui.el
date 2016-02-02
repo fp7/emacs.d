@@ -10,7 +10,11 @@
 
 (setq initial-frame-alist '((width . 100) (fullscreen . fullheight) (top . 0) (left . 0)))
 
-(setq mouse-yank-at-point t)
+
 (blink-cursor-mode 0)
 
 (setq-default frame-title-format "%b (%f)")
+
+
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
