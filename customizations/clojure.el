@@ -7,6 +7,11 @@
 (add-hook 'cider-mode-hook 'company-mode)
 (add-hook 'cider-repl-mode-hook 'company-mode)
 
+(add-hook 'clojure-mode-hook #'aggressive-indent-mode)
+(add-hook 'cider-repl-mode-hook #'aggressive-indent-mode)
+
+(eval-after-load 'aggressive-indent '(define-key aggressive-indent-mode-map (kbd "C-c C-q") nil))
+
 (setq company-idle-delay 0.2)
 
 (require 'clojure-mode-extra-font-locking)
@@ -17,6 +22,8 @@
 (setq cider-repl-result-prefix ";; => ")
 (setq cider-prompt-for-symbol nil)
 (setq cider-repl-display-in-current-window t)
+(setq nrepl-hide-special-buffers t)
+(setq nrepl-log-messages nil)
 
 
 (require 'clj-refactor)

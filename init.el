@@ -20,6 +20,7 @@
               cider
               clj-refactor
               smartparens
+              aggressive-indent
               yaml-mode)))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
