@@ -10,6 +10,7 @@
 (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
 (add-hook 'cider-repl-mode-hook #'aggressive-indent-mode)
 
+
 (eval-after-load 'aggressive-indent '(define-key aggressive-indent-mode-map (kbd "C-c C-q") nil))
 
 (setq company-idle-delay 0.2)
@@ -24,6 +25,7 @@
 (setq cider-repl-display-in-current-window t)
 (setq nrepl-hide-special-buffers t)
 (setq nrepl-log-messages nil)
+(setq cider-repl-display-help-banner nil)
 
 
 (require 'clj-refactor)
