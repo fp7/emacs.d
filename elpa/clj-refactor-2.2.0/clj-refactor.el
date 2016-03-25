@@ -6,9 +6,9 @@
 ;; Author: Magnar Sveen <magnars@gmail.com>
 ;;         Lars Andersen <expez@expez.com>
 ;;         Benedek Fazekas <benedek.fazekas@gmail.com>
-;; Version: 2.0.0
+;; Version: 2.2.0
 ;; Keywords: convenience, clojure, cider
-;; Package-Requires: ((emacs "24.4") (s "1.8.0") (dash "2.4.0") (yasnippet "0.6.1") (paredit "24") (multiple-cursors "1.2.2") (cider "0.10.0") (edn "1.1.2") (inflections "2.3") (hydra "0.13.2"))
+;; Package-Requires: ((emacs "24.4") (s "1.8.0") (dash "2.4.0") (yasnippet "0.6.1") (paredit "24") (multiple-cursors "1.2.2") (cider "0.11.0") (edn "1.1.2") (inflections "2.3") (hydra "0.13.2"))
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
@@ -211,6 +211,11 @@ won't run if there is a broken namespace in the project."
   :group 'cljr
   :type 'string)
 
+(defcustom cljr-inject-dependencies-at-jack-in t
+  "When nil, do not inject repl dependencies (most likely nREPL middlewares) at `cider-jack-in' time."
+  :group 'cljr
+  :type 'boolean)
+
 (defvar clj-refactor-map (make-sparse-keymap) "")
 
 (defvar cljr--add-require-snippet
@@ -244,6 +249,7 @@ won't run if there is a broken namespace in the project."
     "rename-file-or-dir"
     "resolve-missing"
     "stubs-for-interface"
+    "find-used-publics"
     "version"
     "warm-ast-cache"
     ))
@@ -612,7 +618,10 @@ list of (fn args) to pass to `apply''"
 (defun cljr--make-room-for-toplevel-form ()
   (if (cljr--whitespace? (buffer-substring-no-properties (point) (point-max)))
       ;; make room at end of buffer
-      (unless (looking-back "\n") (open-line 2) (forward-line))
+      (progn (open-line 2)
+             (delete-blank-lines)
+             (open-line 1)
+             (forward-line))
     (cljr--goto-toplevel)
     (goto-char (point-at-bol))
     (open-line 2)))
@@ -986,6 +995,11 @@ If CLJS? is T we insert in the cljs part of the ns declaration."
     (when src-ns
       (mapconcat 'identity (append (butlast ns-chunks) (list src-ns)) "."))))
 
+(defun cljr--cljs-file? (&optional buf)
+  "Is BUF, or the current buffer, visiting a cljc file?"
+  (s-equals? (file-name-extension (buffer-file-name (or buf (current-buffer))))
+             "cljs"))
+
 (defun cljr--cljc-file? (&optional buf)
   "Is BUF, or the current buffer, visiting a cljc file?"
   (s-equals? (file-name-extension (buffer-file-name (or buf (current-buffer))))
@@ -1101,14 +1115,14 @@ word test in it and whether the file lives under the test/ directory."
   (remove-hook 'yas/after-exit-snippet-hook
                'cljr--maybe-eval-ns-form-and-remove-hook :local))
 
-(defun cljr--sort-ns ()
-  (cljr--assert-leiningen-project)
-  (cljr--ensure-op-supported "clean-ns")
-  (cljr--clean-ns nil :no-pruning))
+(defun cljr--maybe-sort-ns ()
+  (when (and cljr-auto-sort-ns (cider-connected-p)
+             (cljr--op-supported? "clean-ns"))
+    (cljr--assert-leiningen-project)
+    (cljr--clean-ns nil :no-pruning)))
 
 (defun cljr--sort-and-remove-hook (&rest ignore)
-  (when cljr-auto-sort-ns
-    (cljr--sort-ns))
+  (cljr--maybe-sort-ns)
   (remove-hook 'yas/after-exit-snippet-hook
                'cljr--sort-and-remove-hook :local))
 
@@ -1159,6 +1173,37 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-add-import-to-ns
   (cljr--add-yas-ns-updated-hook)
   (yas-expand-snippet "$1"))
 
+(defun cljr--extract-refer-all-namespaces ()
+  "Returns a list of all the namespaces that are required with :refer :all"
+  (cljr--goto-ns)
+  (when (search-forward ":require" nil t)
+    (let (nses
+          (require-end (save-excursion
+                         (progn
+                           (paredit-backward-up)
+                           (paredit-forward)
+                           (point)))))
+      (if (not (save-excursion (re-search-forward ":refer\s:all" require-end t)))
+          (message "There is no :refer :all in the ns declaration.")
+        (while (re-search-forward ":refer\s:all" require-end t)
+          (paredit-backward-up)
+          (let ((prefix (save-excursion
+                          (when (progn
+                                  (paredit-backward-up)
+                                  (not (looking-at-p "(:require")))
+                            (paredit-forward-down)
+                            (buffer-substring (point) (cljr--point-after 'paredit-forward)))))
+                (ns (progn
+                      (paredit-forward-down)
+                      (buffer-substring (point) (cljr--point-after 'paredit-forward)))))
+            (push
+             (if prefix
+                 (concat prefix "." ns)
+               ns)
+             nses)
+            (paredit-forward-up)))
+        (nreverse nses)))))
+
 ;;;###autoload
 (defun cljr-require-macro ()
   "Add a require statement for a macro to the ns form in current buffer.
@@ -1191,26 +1236,33 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-stop-referring"
                     (point)))
            (ns (save-excursion
                  (paredit-forward-down)
-                 (search-forward " :as " bound t)
                  (let ((beg (point)))
                    (paredit-forward)
-                   (buffer-substring-no-properties beg (point))))))
+                   (buffer-substring-no-properties beg (point)))))
+           (alias (save-excursion
+                    (paredit-forward-down)
+                    (when (search-forward " :as " bound t)
+                      (let ((beg (point)))
+                        (paredit-forward)
+                        (buffer-substring-no-properties beg (point)))))))
       (unless (re-search-forward " :refer " bound t)
         (user-error "No :refer clause found."))
-      (when (looking-at ":all")
-        (user-error "Not smart enough to stop referring to :all unfortunately."))
-      (paredit-forward-down)
-      (let* ((beg (point))
-             (str (progn (paredit-forward-up)
-                         (paredit-backward-down)
-                         (buffer-substring-no-properties beg (point))))
-             (symbols (s-split " " (s-trim str) t)))
-        (paredit-backward-up)
-        (paredit-backward)
-        (cljr--delete-and-extract-sexp)
-        (cljr--delete-and-extract-sexp)
-        (just-one-space 0)
-        (cljr--add-ns-prefix ns symbols)))))
+      (if (looking-at "\s*:all")
+          (progn
+            (paredit-backward-up)
+            (cljr--replace-refer-all ns alias))
+        (paredit-forward-down)
+        (let* ((beg (point))
+               (str (progn (paredit-forward-up)
+                           (paredit-backward-down)
+                           (buffer-substring-no-properties beg (point))))
+               (symbols (s-split " " (s-trim str) t)))
+          (paredit-backward-up)
+          (paredit-backward)
+          (cljr--delete-and-extract-sexp)
+          (cljr--delete-and-extract-sexp)
+          (just-one-space 0)
+          (cljr--add-ns-prefix (or alias ns) symbols))))))
 
 (defun cljr--add-ns-prefix (ns symbols)
   "Adds an NS prefix to every symbol in SYMBOLS."
@@ -2118,13 +2170,18 @@ FEATURE is either :clj or :cljs."
         (gethash :clj aliases)
       (gethash :cljs aliases))))
 
+(defun cljr--is-global-alias (alias)
+  (and (cljr--cljs-file?)
+       (s-equals? "js" alias)))
+
 (defun cljr--magic-requires-lookup-alias ()
   "Return (alias (ns.candidate1 ns.candidate1)) if we recognize
 the alias in the project."
   (let ((short (buffer-substring-no-properties
                 (cljr--point-after 'paredit-backward)
                 (1- (point)))))
-    (unless (cljr--resolve-alias short)
+    (unless (or (cljr--resolve-alias short)
+                (cljr--is-global-alias short))
       (-if-let* ((aliases (ignore-errors (cljr--get-aliases-from-middleware)))
                  (candidates (gethash (intern short) aliases)))
           (list short candidates)
@@ -2739,11 +2796,17 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-find-usages"
       (cljr--find-symbol (or symbol-name symbol) ns
                          #'cljr--format-and-insert-symbol-occurrence))))
 
-(defun cljr--rename-occurrence (file line-beg col-beg name new-name)
+(defun cljr--rename-occurrence (file line-beg col-beg line-end col-end name new-name)
   (save-excursion
     (with-current-buffer
         (find-file-noselect file)
-      (let* ((name (->> name cljr--symbol-suffix regexp-quote)))
+      (let* ((name (->> name cljr--symbol-suffix regexp-quote))
+             (search-limit (save-excursion
+                             (progn
+                               (goto-char (point-min))
+                               (forward-line (1- line-end))
+                               (move-to-column (1- col-end))
+                               (point)))))
         (goto-char (point-min))
         (forward-line (1- line-beg))
         (move-to-column (1- col-beg))
@@ -2752,8 +2815,8 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-find-usages"
         (when (looking-at-p "(\\s-*def")
           (re-search-forward name)
           (paredit-backward))
-        (when (looking-at (format "\\(.+/\\)?\\(%s\\)" name))
-          (replace-match (format "\\1%s" new-name))))
+        (when (re-search-forward (format "\\(.+/\\)?\\(%s\\)" name) search-limit t)
+          (replace-match (format "\\1%s" new-name) t)))
       (save-buffer))))
 
 (defun cljr--rename-occurrences (ns occurrences new-name)
@@ -2761,8 +2824,13 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-find-usages"
     (let* ((file (gethash :file symbol-meta))
            (line-beg (gethash :line-beg symbol-meta))
            (col-beg (gethash :col-beg symbol-meta))
-           (name (gethash :name symbol-meta)))
-      (cljr--rename-occurrence file line-beg col-beg name new-name))))
+           (line-end (gethash :line-end symbol-meta))
+           (col-end (gethash :col-end symbol-meta))
+           (name (gethash :name symbol-meta))
+           (new-name* (if (stringp new-name)
+                          new-name
+                        (funcall new-name name))))
+      (cljr--rename-occurrence file line-beg col-beg line-end col-end name new-name*))))
 
 ;;;###autoload
 (defun cljr-rename-symbol (&optional new-name)
@@ -2782,12 +2850,36 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-rename-symbol"
            (occurrences (cljr--find-symbol-sync name ns))
            (new-name (or new-name (read-from-minibuffer "New name: "
                                                         (cljr--symbol-suffix symbol))))
-           (buffer-of-symbol (cider-find-var-file (concat ns "/" symbol-name)))
+           (buffer-of-symbol (cider-find-var-file ns symbol-name))
            (tooling-buffer-p (cider--tooling-file-p (buffer-name buffer-of-symbol))))
       (cljr--rename-occurrences ns occurrences new-name)
       (cljr--post-command-message "Renamed %s occurrences of %s" (length occurrences) name)
       (when (and (> (length occurrences) 0) (not cljr-warn-on-eval))
         (cljr--warm-ast-cache)))))
+
+(defun cljr--replace-refer-all-with-alias (ns publics-occurrences alias)
+  (let ((ns-last-token (-last-item (s-split "\\." ns))))
+    (when (re-search-forward (format "\\(%s\\).*?\\([\]\)]\\)" ns-last-token) nil t)
+      (replace-match (format "\\1 :as %s\\2" alias)))
+    (perform-replace (format "%s/" alias) "" nil nil t)
+    (cljr--rename-occurrences ns publics-occurrences (lambda (old-name) (concat alias "/" old-name)))))
+
+(defun cljr--replace-refer-all (ns alias)
+  "Replaces :refer :all style require with alias :as style require.
+
+Also adds the alias prefix to all occurrences of public symbols in the namespace.
+"
+  (cljr--ensure-op-supported "find-used-publics")
+  (let ((filename (buffer-file-name)))
+    (let* ((alias (or alias
+                    (cljr--prompt-user-for (format "alias for [%s]: " ns))))
+           (request
+            (cljr--create-msg "find-used-publics"
+                              "used-ns" ns
+                              "file" filename))
+           (occurrences (->> (cljr--call-middleware-sync request "used-publics")
+                             (edn-read))))
+      (cljr--replace-refer-all-with-alias ns occurrences alias))))
 
 (defun cljr--maybe-nses-in-bad-state (response)
   (let ((asts-in-bad-state (->> (nrepl-dict-get response "ast-statuses")
@@ -2822,7 +2914,8 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-rename-symbol"
 If NO-PRUNE is passed, the default is overridden and unused stuff isn't \
 removed."
   ;; Don't save prematurely when called from `cljr-project-clean'
-  (unless *cljr--noninteractive*
+  (unless (and *cljr--noninteractive*
+               (not (buffer-modified-p)))
     (save-buffer))
   (let ((path (or path (cljr--project-relative-path (buffer-file-name)))))
     (-when-let (new-ns (cljr--call-middleware-sync
@@ -3365,6 +3458,7 @@ You can mute this warning by changing cljr-suppress-middleware-warnings."
                cljr-eagerly-build-asts-on-startup)
       (cljr--warm-ast-cache))))
 
+
 (defvar cljr--list-fold-function-names
   '("map" "mapv" "pmap" "keep" "mapcat" "filter" "remove" "take-while" "drop-while"
     "group-by" "partition-by" "some" "every?" "not-every?" "not-any?"))
@@ -3395,7 +3489,7 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-create-fn-from-e
     (paredit-backward-up))
   (let* ((sexp-forms* (cljr--extract-sexp-as-list))
          (fn-name (car sexp-forms*))
-         (symbol-at-point (cider-symbol-at-point))
+         (symbol-at-point (or (cider-symbol-at-point) ""))
          (parent-fn (ignore-errors
                       (save-excursion
                         (paredit-backward-up 2)
@@ -3577,6 +3671,9 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-create-fn-from-e
 (defvar cljr--fns-that-get-item-out-of-coll
   (list "first" "second" "last" "fnext" "nth" "rand-nth"))
 
+(defun cljr--strip-keyword-ns (s)
+  (car (s-match "[^/]+$" s)))
+
 (defun cljr--guess-param-name (form)
   (let* ((prepped-form (cljr--strip-off-semantic-noops
                         (cljr--unwind-s form)))
@@ -3585,7 +3682,7 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-create-fn-from-e
      ((cljr--symbol? prepped-form)
       prepped-form)
      ((cljr--keyword-lookup? prepped-form)
-      (match-string 1 prepped-form))
+      (cljr--strip-keyword-ns (match-string 1 prepped-form)))
      ((and fn-call (s-ends-with? "." fn-call))
       (s-dashed-words (-last-item (s-split "\\." fn-call t))))
      ((and fn-call (s-starts-with? "create-" fn-call))
@@ -4154,6 +4251,20 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-change-function-
       (when (get-buffer cljr--manual-intervention-buffer)
         (kill-buffer cljr--manual-intervention-buffer))
       (pop-to-buffer cljr--change-signature-buffer))))
+
+;;;###autoload
+(defun cljr--inject-jack-in-dependencies ()
+  "Inject the REPL dependencies of clj-refactor at `cider-jack-in'.
+If injecting the dependencies is not preferred set `cljr-inject-dependencies-at-jack-in' to nil."
+  (when (and cljr-inject-dependencies-at-jack-in
+              (boundp 'cider-jack-in-lein-plugins)
+              (boundp 'cider-jack-in-nrepl-middlewares))
+    (add-to-list 'cider-jack-in-lein-plugins `("refactor-nrepl" ,(cljr--version t)))
+    (add-to-list 'cider-jack-in-nrepl-middlewares "refactor-nrepl.middleware/wrap-refactor")))
+
+;;;###autoload
+(eval-after-load 'cider
+  '(cljr--inject-jack-in-dependencies))
 
 (add-hook 'cider-connected-hook #'cljr--init-middleware)
 

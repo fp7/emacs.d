@@ -1,3 +1,11 @@
+2016-03-04  Oleh Krehel	 <ohwoeowho@gmail.com>
+
+	Merge commit 'e0454a100541ce3f1f732b97894a3441cef3316f' from hydra
+
+2016-01-21  Stefan Monnier  <monnier@iro.umontreal.ca>
+
+	* packages/gnome-c-style/gnome-c-tests.el: Add copyright blurb
+
 2015-12-08  Oleh Krehel	 <ohwoeowho@gmail.com>
 
 	Merge commit '97c2270f7138530de21f773f094c1495498cac78' from hydra

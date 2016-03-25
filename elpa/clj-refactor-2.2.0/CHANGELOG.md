@@ -2,6 +2,20 @@
 
 ## Up next
 
+## 2.2.0
+
+- Smarten up `cljr-stop-referring` to replace `:refer :all` style require with alias and apply the alias to all occurrences of symbols from the referred namespace.
+- [#292](https://github.com/clojure-emacs/clj-refactor.el/issues/292) The buffer wasn't saved after adding a missing libspec causing clean-ns
+to act on stale data.
+- Don't try to resolve `js/` in cljs-mode
+- `cljr-create-fn-from-example` improvements: strip ns off keywords when making param name; always include a blank line over new function
+- [#306](https://github.com/clojure-emacs/clj-refactor.el/issues/306) Add-require doesn't jump back if there is no REPL connection with refactor-nrepl configured
+
+### Changes
+
+- Compatible with CIDER 0.11
+- Follow up CIDER 0.11 injecting its own dependencies at `cider-jack-in` by adding clj-refactor's own dependencies to the approriate vars in CIDER. Both leiningen and boot are supported. Set `cljr-inject-dependencies-at-jack-in` to nil to opt out.
+
 ## 2.0.0
 
 - [#267](https://github.com/clojure-emacs/clj-refactor.el/issues/267)
@@ -24,7 +38,7 @@
 - [refactor-nrepl#99](https://github.com/clojure-emacs/refactor-nrepl/issues/99) if cljr-thread-first-all or cljr-thread-last-all is called with a prefix the last expression is not threaded. cljr-thread-all-but-last defcustom has the same effect without the prefix
 - [hydra](https://github.com/abo-abo/hydra) menus for discoverability: they help to (re)learn clj-refactor key bindings. See: [parent hydra](https://github.com/clojure-emacs/clj-refactor.el/wiki/Hydra).
 
-# Bugs fixed
+### Bugs fixed
 
 - [#285](https://github.com/clojure-emacs/clj-refactor.el/issues/285) clean-ns did the wrong thing unless the code was loaded.
 

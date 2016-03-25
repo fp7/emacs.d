@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "clj-refactor" "clj-refactor.el" (22199 3729
-;;;;;;  474217 87000))
+;;;### (autoloads nil "clj-refactor" "clj-refactor.el" (22261 10760
+;;;;;;  661352 821000))
 ;;; Generated autoloads from clj-refactor.el
 
 (autoload 'cljr-add-keybindings-with-prefix "clj-refactor" "\
@@ -370,6 +370,14 @@ See: https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-change-function-
 
 \(fn)" t nil)
 
+(autoload 'cljr--inject-jack-in-dependencies "clj-refactor" "\
+Inject the REPL dependencies of clj-refactor at `cider-jack-in'.
+If injecting the dependencies is not preferred set `cljr-inject-dependencies-at-jack-in' to nil.
+
+\(fn)" nil nil)
+
+(eval-after-load 'cider '(cljr--inject-jack-in-dependencies))
+
 (autoload 'clj-refactor-mode "clj-refactor" "\
 A mode to keep the clj-refactor keybindings.
 
@@ -377,8 +385,8 @@ A mode to keep the clj-refactor keybindings.
 
 ;;;***
 
-;;;### (autoloads nil nil ("clj-refactor-pkg.el") (22199 3729 485244
-;;;;;;  696000))
+;;;### (autoloads nil nil ("clj-refactor-pkg.el") (22261 10760 669496
+;;;;;;  194000))
 
 ;;;***
 
