@@ -21,11 +21,13 @@
 (setq cider-prompt-save-file-on-load 'always-save)
 (setq cider-interactive-eval-result-prefix ";; => ")
 (setq cider-repl-result-prefix ";; => ")
+(setq cider-repl-use-pretty-printing t)
 (setq cider-prompt-for-symbol nil)
 (setq cider-repl-display-in-current-window t)
 (setq nrepl-hide-special-buffers t)
 (setq nrepl-log-messages nil)
 (setq cider-repl-display-help-banner nil)
+(setq cider-auto-jump-to-error 'errors-only)
 
 
 (require 'clj-refactor)
