@@ -28,6 +28,7 @@
 (setq nrepl-log-messages nil)
 (setq cider-repl-display-help-banner nil)
 (setq cider-auto-jump-to-error 'errors-only)
+(setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
 
 
 (require 'clj-refactor)
