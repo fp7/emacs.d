@@ -16,7 +16,6 @@
               company
               company-ghc
               clojure-mode
-              clojure-mode-extra-font-locking
               cider
               clj-refactor
               smartparens

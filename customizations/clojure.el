@@ -15,8 +15,6 @@
 
 (setq company-idle-delay 0.2)
 
-(require 'clojure-mode-extra-font-locking)
-
 (setq cider-show-error-buffer t)
 (setq cider-prompt-save-file-on-load 'always-save)
 (setq cider-interactive-eval-result-prefix ";; => ")
