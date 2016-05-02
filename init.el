@@ -18,7 +18,6 @@
               clojure-mode
               cider
               clj-refactor
-              smartparens
               aggressive-indent
               yaml-mode)))
   (dolist (pkg pkgs)
@@ -34,6 +33,5 @@
 (load "editing.el")
 (load "ui.el")
 (load "navigation.el")
-(load "sp.el")
 (load "auctex-cfg.el")
 (load "clojure.el")
