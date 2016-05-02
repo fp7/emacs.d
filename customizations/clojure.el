@@ -8,13 +8,14 @@
 (add-hook 'cider-repl-mode-hook 'company-mode)
 
 (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
-(add-hook 'cider-repl-mode-hook #'aggressive-indent-mode)
 
+(add-hook 'cider-mode-hook #'eldoc-mode)
 
 (eval-after-load 'aggressive-indent '(define-key aggressive-indent-mode-map (kbd "C-c C-q") nil))
 
 (setq company-idle-delay 0.2)
 
+(setq cider-repl-use-clojure-font-lock t)
 (setq cider-show-error-buffer t)
 (setq cider-prompt-save-file-on-load 'always-save)
 (setq cider-interactive-eval-result-prefix ";; => ")
@@ -27,6 +28,7 @@
 (setq cider-repl-display-help-banner nil)
 (setq cider-auto-jump-to-error 'errors-only)
 (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
+
 
 
 (require 'clj-refactor)
