@@ -14,7 +14,13 @@
 (eval-after-load 'aggressive-indent '(define-key aggressive-indent-mode-map (kbd "C-c C-q") nil))
 
 (setq company-idle-delay 0.2)
-(global-set-key (kbd "TAB") #'company-indent-or-complete-common)
+
+
+
+(add-hook 'company-mode-hook
+          (lambda ()
+            (local-set-key (kbd "TAB") #'company-indent-or-complete-common)))
+            
 
 (setq cider-repl-use-clojure-font-lock t)
 (setq cider-show-error-buffer t)

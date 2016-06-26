@@ -19,14 +19,15 @@
               cider
               clj-refactor
               aggressive-indent
-              yaml-mode)))
+              yaml-mode
+              go-mode
+              company-go
+              flycheck)))
   (dolist (pkg pkgs)
     (when (not (package-installed-p pkg))
       (package-install pkg))))
 
 (setq inhibit-startup-message t)
-
-
 
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
@@ -35,3 +36,4 @@
 (load "navigation.el")
 (load "auctex-cfg.el")
 (load "clojure.el")
+(load "go.el")
